@@ -1,6 +1,7 @@
 #ifndef DRAWING_HXX
 #define DRAWING_HXX
 
+#include <SDL/SDL_video.h>
 #include "core.hxx"
 
 class Drawing {
@@ -13,8 +14,11 @@ public:
         WHITE = 0xFFFFFF
     } color_;
     Point3D currentPoint_;
+    int window_;
+    float rx, ry, px, py;
 public:
-    Drawing();
+    Drawing(int window);
+    ~Drawing();
     void SetColor(Color);
     void MoveTo(Point3D);
     void LineTo(Point3D);

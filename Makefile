@@ -1,7 +1,7 @@
 CPP = g++
 CFLAGS = -g -c
 LD = g++
-LDFLAGS = 
+LDFLAGS = -lglut -lGLU -lGL
 OBJS = main.o core.o drawing.o pathfinder.o
 
 rsff: $(OBJS)
