@@ -7,7 +7,7 @@
 class Drawing {
 public:
     enum Color {
-        CYAN = 0x0000FF,
+        CYAN = 0x00FFFF,
         SALMON = 0xFF8080,
         YELLOW = 0xFFFF00,
         LIME = 0x00FF00,
