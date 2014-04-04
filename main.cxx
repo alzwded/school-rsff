@@ -15,27 +15,16 @@ void initGL()
 void drawScene()
 {
     Drawing dwg(window);
-    //dwg.MoveTo(Point3D(0.2, 0.2, 10.0));
-    //dwg.Cube(0.1);
-    //dwg.MoveTo(Point3D(0.2, -0.2, 10.0));
-    //dwg.Cube(0.1);
-    //dwg.MoveTo(Point3D(0, 0, 5.0));
-    //dwg.Cube(2.0);
-    //dwg.MoveTo(Point3D(0.2, -0.2, 3.f));
-    //dwg.Cube(0.1);
-    //dwg.MoveTo(Point3D(0.2, -0.2, 4.f));
-    //dwg.Cube(0.1);
 
-    dwg.MoveTo(Point3D(0.f,     1.f,   10.f));
-    dwg.LineTo(Point3D(0.f,     -1.f,  10.f));
-    dwg.MoveTo(Point3D(1.f,     0.f,   10.f));
-    dwg.LineTo(Point3D(-1.f,    0.f,   10.f));
-    dwg.MoveTo(Point3D(0.f,     0.f,   9.f));
-    dwg.LineTo(Point3D(0.f,    0.f,   11.f));
+#define GL_TEST_MODEL
+#ifdef GL_TEST_MODEL
+    dwg.MoveTo(Point3D(0.f,     1.f,   5.f));
+    dwg.LineTo(Point3D(0.f,     -1.f,  5.f));
+    dwg.MoveTo(Point3D(1.f,     0.f,   5.f));
+    dwg.LineTo(Point3D(-1.f,    0.f,   5.f));
+    dwg.MoveTo(Point3D(0.f,     0.f,   4.f));
+    dwg.LineTo(Point3D(0.f,    0.f,    6.f));
 
-    //gluLookAt(0, 0, 5, 0, 0, 0, 0, 1, 0);
-    //glutWireCube(0.1);
-    //glutWireCube(1);
     dwg.MoveTo(Point3D(0, 0, 5));
     dwg.SetColor(Drawing::LIME);
     dwg.Cube(.1);
@@ -51,11 +40,7 @@ void drawScene()
     dwg.Cube(2.f);
     dwg.MoveTo(Point3D(4, 0, 5));
     dwg.Cube(2.f);
-
-    //dwg.MoveTo(Point3D(0.2f, 0.2f, 2.0f));
-    //dwg.LineTo(Point3D(0.2, -0.2, 3.f));
-    //dwg.MoveTo(Point3D(0.0, 0.0, 0.0));
-    //dwg.LineTo(Point3D(0.0, 0.5, 20.0));
+#endif
 }
 
 void initRendering()
