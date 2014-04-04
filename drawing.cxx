@@ -1,5 +1,6 @@
 #include "drawing.hxx"
 #include <GL/freeglut.h>
+#include <cmath>
 
 #define SETFUCKINGCOLOR(R, G, B) glColor3f( (R) / 255.f , (G) / 255.f , (B) / 255.f )
 
@@ -7,8 +8,8 @@ Drawing::Drawing(int window)
     : currentPoint_(0.f, 0.f, 0.f)
     , color_(YELLOW)
     , window_(window)
-    , rx(30.f), ry(-15.f), px(6.f), py(-2.f)
-    //, rx(0.f), ry(0.f), px(0.f), py(0.f)
+    , rx(30.f), ry(-15.f), px(0.f), py(-0.f)
+    //, rx(30.f), ry(0.f), px(0.f), py(-0.f)
 {
     // setup
 	glClearColor(.0, .0, 0.f, 1.f);
@@ -18,14 +19,21 @@ Drawing::Drawing(int window)
     glLoadIdentity();
     glFrustum(-1.0, 1.0, -1.0, 1.0, 1.5, 20.0);
 
+    // rotate around center point
+    float x, y, z;
+#define COS(U) cosf( U / 180.f * 3.14159 )
+#define SIN(U) sinf( U / 180.f * 3.14159 )
+    x = +5.f * SIN(-rx) * COS(-ry);
+    y = +5.f * SIN(-ry);
+    z = +5.f * COS(-rx) * COS(-ry);
+    gluLookAt(
+            -px + x, y, py + z,
+            -px, 0.f, py,
+            0, 1, 0);
+
 	glMatrixMode(GL_MODELVIEW); 
 	glLoadIdentity(); 
 	glEnable(GL_DEPTH_TEST);
-
-    // rotate
-	glRotatef(-ry, 1.0f, 0.0f, 0.0f); // yCamera
-	glRotatef(-rx, 0.0f, 1.0f, 0.0f); //Roteste camera
-	glTranslatef(-px, -5.0f, py);
 
     SETFUCKINGCOLOR((color_ >> 16) % 256, (color_ >> 8) % 256, color_ % 256);
 }

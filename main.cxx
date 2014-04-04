@@ -18,12 +18,12 @@ void drawScene()
 
 #define GL_TEST_MODEL
 #ifdef GL_TEST_MODEL
-    dwg.MoveTo(Point3D(0.f,     1.f,   5.f));
-    dwg.LineTo(Point3D(0.f,     -1.f,  5.f));
-    dwg.MoveTo(Point3D(1.f,     0.f,   5.f));
-    dwg.LineTo(Point3D(-1.f,    0.f,   5.f));
-    dwg.MoveTo(Point3D(0.f,     0.f,   4.f));
-    dwg.LineTo(Point3D(0.f,    0.f,    6.f));
+    dwg.MoveTo(Point3D(0.f,     1.f,   0.f));
+    dwg.LineTo(Point3D(0.f,     -1.f,  0.f));
+    dwg.MoveTo(Point3D(1.f,     0.f,   0.f));
+    dwg.LineTo(Point3D(-1.f,    0.f,   0.f));
+    dwg.MoveTo(Point3D(0.f,     0.f,   -1.f));
+    dwg.LineTo(Point3D(0.f,    0.f,     1.f));
 
     dwg.MoveTo(Point3D(0, 0, 5));
     dwg.SetColor(Drawing::LIME);
