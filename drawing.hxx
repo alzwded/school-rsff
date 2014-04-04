@@ -1,7 +1,6 @@
 #ifndef DRAWING_HXX
 #define DRAWING_HXX
 
-#include <SDL/SDL_video.h>
 #include "core.hxx"
 
 class Drawing {
