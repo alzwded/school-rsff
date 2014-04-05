@@ -35,8 +35,10 @@ input-file:
 
 input-list: input-list building-section
           | input-list sensor-section
+          | input-list remark
           | building-section
           | sensor-section
+          | remark
           ;
 
 COORD: '(' FLOAT ',' FLOAT ',' FLOAT ')' /* (x, y, z) */
@@ -53,6 +55,8 @@ sensor-type: "CENTRAL" /* nodul coordonator */
            | "ROUTER"  /* router wireless   */
            | "SENSOR"  /* senzor efectiv    */
            ;
+
+remark: "REM[^$]*$" ;
 ```
 
 Look at `testinput` for an example.
