@@ -8,6 +8,7 @@ This project lives on http://github.com/alzwded/school-rsff
 Video of the simulator in action:
 ```
 http://youtu.be/Yq9bAg_VTa4
+http://youtu.be/yiWr0eWtTnU
 ```
 
 Building on Windows
