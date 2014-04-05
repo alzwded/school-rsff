@@ -1,13 +1,68 @@
+#include <cstdio>
+#include <fstream>
+#include <algorithm>
 #include "core.hxx"
 #include "pathfinder.hxx"
 #include "drawing.hxx"
+#include "parser.hxx"
+
+static Beam::vector beams;
+static Sensor::vector sensors;
+static AnimationData ad;
+#define AROUND(X, Y, RX, RY, T) (X > RX - T && X < RX + T && Y > RY - T && Y < RY + T)
 
 bool toggle = false;
-#define AROUND(X, Y, RX, RY, T) (X > RX - T && X < RX + T && Y > RY - T && Y < RY + T)
+
+struct BeamDrawer {
+    Drawing& dwg;
+    BeamDrawer(Drawing& drawing)
+        : dwg(drawing)
+    {}
+    void operator()(Beam const& o) const
+    {
+        dwg.MoveTo(o.firstPoint);
+        dwg.LineTo(o.secondPoint);
+    }
+};
+
+struct SensorDrawer
+{
+    Drawing& dwg;
+    AnimationData const& ad;
+    SensorDrawer(Drawing& drawing, AnimationData const& animationData)
+        : dwg(drawing)
+        , ad(animationData)
+    {}
+    void operator()(Sensor const& o) const
+    {
+        if(o.selected || ad.Sensors().find(&o) != ad.Sensors().end()) {
+            dwg.SetColor(Drawing::LIME);
+        } else {
+            switch(o.type) {
+            case Sensor::CENTRAL:
+                dwg.SetColor(Drawing::SALMON);
+                break;
+            case Sensor::ROUTER:
+                dwg.SetColor(Drawing::CYAN);
+                break;
+            case Sensor::SENSOR:
+                dwg.SetColor(Drawing::YELLOW);
+                break;
+            }
+        }
+        dwg.MoveTo(o.location);
+        dwg.Cube(0.1f);
+    }
+};
 
 static void drawScene(Drawing& dwg)
 {
-#define GL_TEST_MODEL
+    dwg.SetColor(Drawing::WHITE);
+    std::for_each(beams.begin(), beams.end(), BeamDrawer(dwg));
+
+    std::for_each(sensors.begin(), sensors.end(), SensorDrawer(dwg, ad));
+
+    std::for_each(ad.Beams().begin(), ad.Beams().end(), BeamDrawer(dwg));
 #ifdef GL_TEST_MODEL
     dwg.MoveTo(Point3D(0.f,     1.f,   0.f));
     dwg.LineTo(Point3D(0.f,     -1.f,  0.f));
@@ -119,6 +174,20 @@ static void onmousemove(int x, int y)
 
 int main(int argc, char* argv[])
 {
+    std::fstream f;
+    if(argc != 2) {
+        printf("usage: %s inputFile\n", argv[0]);
+        return 1;
+    } else {
+        f.open(argv[1], std::ios::in);
+
+        if(!f.good()) {
+            printf("usage: %s inputFile\n", argv[0]);
+            printf("Failed to open %s\n", argv[1]);
+            return 2;
+        }
+    }
+
     Path p = Pathfinder::ComputePath();
     Point3D PP(0, 0, 0);
 
@@ -126,6 +195,8 @@ int main(int argc, char* argv[])
     Drawing::SetOnMouseDown(onmousedown);
     Drawing::SetOnMouseUp(onmouseup);
     Drawing::SetOnMouseMove(onmousemove);
+
+    Parser::Parse(f, beams, sensors);
 
     Drawing::Loop(NULL, drawScene);
 

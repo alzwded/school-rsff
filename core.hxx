@@ -4,11 +4,12 @@
 #include <stddef.h>
 #include <vector>
 #include <set>
+#include <deque>
 
 struct Point3D {
     float x, y, z;
 
-    Point3D(float X, float Y, float Z)
+    Point3D(float X = 0.f, float Y = 0.f, float Z = 0.f)
         : x(X), y(Y), z(Z)
     {}
 };
@@ -16,7 +17,7 @@ struct Point3D {
 struct Point2D {
     float x, y;
 
-    Point2D(float X, float Y)
+    Point2D(float X = 0.f, float Y = 0.f)
         : x(X), y(Y)
     {}
 };
@@ -27,6 +28,8 @@ struct Beam {
     Beam(Point3D p1, Point3D p2)
         : firstPoint(p1), secondPoint(p2)
     {}
+
+    typedef std::deque<Beam> vector;
 };
 
 struct Sensor {
@@ -42,6 +45,8 @@ struct Sensor {
     Sensor(Point3D p, SensorType t, float r)
         : location(p), type(t), range(r), selected(false)
     {}
+
+    typedef std::deque<Sensor> vector;
 };
 
 struct Edge {
@@ -76,6 +81,11 @@ public:
 
     Sensors_t const& Sensors() const {
         return animatedSensors_;
+    }
+
+    void Clear() {
+        connections_.clear();
+        animatedSensors_.clear();
     }
 };
 

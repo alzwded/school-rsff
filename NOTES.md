@@ -65,11 +65,7 @@ Building
 --------
 
 ```
-building-section: "BUILDING" coord-list ;
-
-coord-list: coord-list beam-decl
-          | beam-decl
-          ;
+building-section: "BUILDING" beam-decl ;
 
 beam-decl: COORD COORD ;
 ```
@@ -78,11 +74,7 @@ Sensors
 -------
 
 ```
-sensor-section: "SENSORS" sensor-list ;
-
-sensor-list: sensor-list sensor-decl
-           | sensor-decl
-           ;
+sensor-section: "SENSOR" sensor-decl ;
 
 sensor-decl: sensor-type COORD FLOAT ; /* type, location, range */
 
