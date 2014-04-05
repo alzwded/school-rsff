@@ -5,6 +5,7 @@
 #include <vector>
 #include <set>
 #include <deque>
+#include <string>
 
 struct Point3D {
     float x, y, z;
@@ -91,7 +92,19 @@ public:
 
 struct Button {
     Point2D location;
+    Point2D extent;
+    std::string text;
+    bool highlighted;
     void (*clicked)();
+
+    Button(Point2D _location, Point2D _extent,
+            std::string _text, void (*_clicked)())
+        : location(_location), extent(_extent)
+        , text(_text), clicked(_clicked)
+        , highlighted(false)
+    {}
+
+    typedef std::deque<Button> vector;
 };
 
 #define Generic2D_Button(G) (((G).type == Generic2D::BUTTON) ? (G).payload.button : NULL )

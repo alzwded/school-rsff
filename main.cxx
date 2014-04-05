@@ -6,12 +6,16 @@
 #include "drawing.hxx"
 #include "parser.hxx"
 
+static bool dragging = false;
+static bool panningUp = false;
+static bool panning = false;
+static int lastX = 0, lastY = 0;
+
 static Beam::vector beams;
 static Sensor::vector sensors;
+static Button::vector buttons;
 static AnimationData ad;
-#define AROUND(X, Y, RX, RY, T) (X > RX - T && X < RX + T && Y > RY - T && Y < RY + T)
-
-bool toggle = false;
+static bool clickEnabled = false;
 
 struct BeamDrawer {
     Drawing& dwg;
@@ -55,6 +59,36 @@ struct SensorDrawer
     }
 };
 
+struct ButtonDrawer
+{
+    Drawing& dwg;
+    ButtonDrawer(Drawing& drawing)
+        : dwg(drawing)
+    {}
+
+    void operator()(Button const& o)
+    {
+        if(o.highlighted) {
+            dwg.SetColor(Drawing::LIME);
+        } else {
+            dwg.SetColor(Drawing::WHITE);
+        }
+
+        Point2D p2(o.extent.x, o.location.y);
+        Point2D p4(o.location.x, o.extent.y);
+
+        dwg.MoveTo(o.location);
+        dwg.LineTo(p2);
+        dwg.LineTo(o.extent);
+        dwg.LineTo(p4);
+        dwg.LineTo(o.location);
+
+        Point2D textLocation(o.location.x + 3, o.extent.y - 3);
+        dwg.MoveTo(textLocation);
+        dwg.Text(o.text);
+    }
+};
+
 static void drawScene(Drawing& dwg)
 {
     dwg.SetColor(Drawing::WHITE);
@@ -62,67 +96,38 @@ static void drawScene(Drawing& dwg)
 
     std::for_each(sensors.begin(), sensors.end(), SensorDrawer(dwg, ad));
 
-    std::for_each(ad.Beams().begin(), ad.Beams().end(), BeamDrawer(dwg));
-#ifdef GL_TEST_MODEL
-    dwg.MoveTo(Point3D(0.f,     1.f,   0.f));
-    dwg.LineTo(Point3D(0.f,     -1.f,  0.f));
-    dwg.MoveTo(Point3D(1.f,     0.f,   0.f));
-    dwg.LineTo(Point3D(-1.f,    0.f,   0.f));
-    dwg.MoveTo(Point3D(0.f,     0.f,   -1.f));
-    dwg.LineTo(Point3D(0.f,    0.f,     1.f));
-
-    dwg.MoveTo(Point3D(0, 0, 5));
     dwg.SetColor(Drawing::LIME);
-    dwg.Cube(.1);
-    dwg.Cube(2.f);
-    dwg.MoveTo(Point3D(0, 2, 5));
+    std::for_each(ad.Beams().begin(), ad.Beams().end(), BeamDrawer(dwg));
+
+    ad.Clear();
+
+    // Overlay
     dwg.SetColor(Drawing::WHITE);
-    dwg.Cube(2.f);
-    dwg.MoveTo(Point3D(2, 2, 5));
-    dwg.SetColor(Drawing::SALMON);
-    dwg.Cube(2.f);
-    dwg.MoveTo(Point3D(4, 2, 5));
-    dwg.SetColor(Drawing::CYAN);
-    dwg.Cube(2.f);
-    dwg.MoveTo(Point3D(4, 0, 5));
-    dwg.Cube(2.f);
-
-    dwg.SetColor(Drawing::WHITE);
-    dwg.MoveTo(Point2D(500, 0));
-    dwg.LineTo(Point2D(500, 1000));
-    dwg.MoveTo(Point2D(0, 500));
-    dwg.LineTo(Point2D(1000, 500));
-
-    dwg.MoveTo(Point2D(50, 30));
-    dwg.SetTextScale(8);
-    dwg.Text("Hello!");
-
-    if(toggle) dwg.SetColor(Drawing::LIME);
-    else dwg.SetColor(Drawing::WHITE);
-    dwg.MoveTo(Point2D(770, 800));
-    dwg.SetTextScale(3);
-    dwg.Text("Click");
-    dwg.MoveTo(Point2D(770, 770));
-    dwg.LineTo(Point2D(770, 830));
-    dwg.LineTo(Point2D(830, 830));
-    dwg.LineTo(Point2D(830, 770));
-    dwg.LineTo(Point2D(770, 770));
-#endif
+    dwg.MoveTo(Point2D(10, 950));
+    dwg.SetTextScale(5);
+    dwg.Text("Selecteaza nodul de start:");
+    std::for_each(buttons.begin(), buttons.end(), ButtonDrawer(dwg));
 }
-
-static bool dragging = false;
-static bool panningUp = false;
-static bool panning = false;
-static int lastX = 0, lastY = 0;
 
 static void onmousedown(int x, int y, int btn)
 {
+    for(Button::vector::iterator i = buttons.begin();
+            i != buttons.end(); ++i)
+    {
+        Button& btn = *i;
+        if(!dragging && !panning && !panningUp
+                && btn.location.x < x && btn.location.y < y
+                && btn.extent.x > x && btn.extent.y > y)
+        {
+            clickEnabled = true;
+            return;
+        }
+    }
+
     lastX = x;
     lastY = y;
     if(btn == 1) {
-        if(!AROUND(x, y, 800, 800, 30)) {
-            dragging = true;
-        }
+        dragging = true;
     }
     if(btn == 2) {
         panningUp = true;
@@ -134,12 +139,26 @@ static void onmousedown(int x, int y, int btn)
 
 static void onmouseup(int x, int y, int btn)
 {
-    if(btn == 1) {
-        if(AROUND(x, y, 800, 800, 30)) {
-            toggle = !toggle;
-        } else {
-            dragging = false;
+    for(Button::vector::iterator i = buttons.begin();
+            clickEnabled && i != buttons.end();
+            ++i)
+    {
+        Button& btn = *i;
+        if(!dragging && !panning && !panningUp
+                && btn.location.x < x && btn.location.y < y
+                && btn.extent.x > x && btn.extent.y > y)
+        {
+            if(btn.clicked) btn.clicked();
         }
+    }
+
+    if(clickEnabled) {
+        clickEnabled = false;
+        return;
+    }
+
+    if(btn == 1) {
+        dragging = false;
     }
     if(btn == 2) {
         panningUp = false;
@@ -170,6 +189,35 @@ static void onmousemove(int x, int y)
     }
 
     Drawing::SetVelocity(vx, vy, vz);
+
+    for(Button::vector::iterator i = buttons.begin();
+            i != buttons.end(); ++i)
+    {
+        Button& btn = *i;
+        if(!dragging && !panning && !panningUp
+                && btn.location.x < x && btn.location.y < y
+                && btn.extent.x > x && btn.extent.y > y)
+        {
+            btn.highlighted = true;
+        } else {
+            btn.highlighted = false;
+        }
+    }
+}
+
+void PrecClicked()
+{
+    printf("prec clicked\n");
+}
+
+void UrmClicked()
+{
+    printf("urm clicked\n");
+}
+
+void AnimClicked()
+{
+    printf("anim clicked\n");
 }
 
 int main(int argc, char* argv[])
@@ -190,6 +238,22 @@ int main(int argc, char* argv[])
 
     Path p = Pathfinder::ComputePath();
     Point3D PP(0, 0, 0);
+
+    buttons.push_back(Button(
+                Point2D(10, 970),
+                Point2D(60, 990),
+                "Prec",
+                PrecClicked));
+    buttons.push_back(Button(
+                Point2D(110, 970),
+                Point2D(160, 990),
+                "Urm",
+                UrmClicked));
+    buttons.push_back(Button(
+                Point2D(700, 970),
+                Point2D(980, 990),
+                "Porneste/Opreste animatia",
+                AnimClicked));
 
     Drawing::Init(&argc, argv);
     Drawing::SetOnMouseDown(onmousedown);
