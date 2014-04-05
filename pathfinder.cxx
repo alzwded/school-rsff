@@ -1,11 +1,21 @@
 #include "pathfinder.hxx"
 #include <cmath>
 #include <utility>
+#include <deque>
+
+static Sensor const* StartingSensor = NULL;
+void Pathfinder::SetStartingSensor(Sensor const& s)
+{
+    StartingSensor = &s;
+}
 
 namespace Pathfinder {
+    typedef std::deque<Sensor const*> sensors_t;
+
     class priv_ {
         friend Path ComputePath(Sensor::vector const& sensors);
 
+        // store each unique pair only once
         struct comp {
             bool operator()(std::pair<Sensor const*, Sensor const*> const &left, std::pair<Sensor const*, Sensor const*> const& right) const {
                 if(left.first == right.first && left.second == right.second
@@ -23,16 +33,9 @@ namespace Pathfinder {
         std::set<Sensor const*> spent_;
 
         priv_(Sensor::vector const& sensors);
-        void ComputePathRec(Sensor const&, size_t, Path&);
+        void ComputePathRec(sensors_t&, size_t, Path&);
     };
 } // namespace
-
-static Sensor const* StartingSensor = NULL;
-
-void Pathfinder::SetStartingSensor(Sensor const& s)
-{
-    StartingSensor = &s;
-}
 
 Path Pathfinder::ComputePath(Sensor::vector const& sensors)
 {
@@ -40,8 +43,9 @@ Path Pathfinder::ComputePath(Sensor::vector const& sensors)
     priv_ o(sensors);
     Path p;
     ++p;
-    o.spent_.insert(StartingSensor);
-    o.ComputePathRec(*StartingSensor, 0, p);
+    Pathfinder::sensors_t ss;
+    ss.push_back(StartingSensor);
+    o.ComputePathRec(ss, 0, p);
     return p;
 }
 
@@ -72,51 +76,63 @@ Pathfinder::priv_::priv_(Sensor::vector const& sensors)
 #ifdef TRACE
 # include <cstdio>
 #endif
-void Pathfinder::priv_::ComputePathRec(Sensor const& s, size_t level, Path& path)
+void Pathfinder::priv_::ComputePathRec(Pathfinder::sensors_t& ss, size_t level, Path& path)
 {
-    std::map<Sensor const*, float> localDistanceMap;
-    for(map_t::iterator i = distanceMap_.begin();
-            s.type != Sensor::CENTRAL && i != distanceMap_.end(); ++i)
-    {
-        if(i->first.first == &s) {
-            if(spent_.find(i->first.second) == spent_.end()
-                    && i->first.second->type != Sensor::SENSOR) {
-                localDistanceMap.insert(std::make_pair(i->first.second, i->second));
-            }
-            //distanceMap_.erase(i);
-        } else if(i->first.second == &s) {
-            if(spent_.find(i->first.first) == spent_.end()
-                    && i->first.first->type != Sensor::SENSOR) {
-                localDistanceMap.insert(std::make_pair(i->first.first, i->second));
-            }
-            //distanceMap_.erase(i);
-        }
-    }
-
 #ifdef TRACE
     printf("level: %d\n", level);
 #endif
-    std::deque<Sensor const*> deferred;
-    for(std::map<Sensor const*, float>::iterator i = localDistanceMap.begin();
-            i != localDistanceMap.end(); ++i)
+    // don't go through these nodes again
+    for(Pathfinder::sensors_t::iterator k = ss.begin();
+            k != ss.end(); ++k)
     {
+        spent_.insert(*k);
+    }
+
+    // list of nodes to be processed in the next level
+    Pathfinder::sensors_t deferred;
+    // process each node on the current level and build a list of
+    //     the nodes relayed the message
+    for(Pathfinder::sensors_t::iterator k = ss.begin();
+            k != ss.end(); ++k) {
+        Sensor const& s = **k;
+        // build a map of distances from the current node
+        //     to the still available nodes
+        std::map<Sensor const*, float> localDistanceMap;
+        for(map_t::iterator i = distanceMap_.begin();
+                s.type != Sensor::CENTRAL && i != distanceMap_.end(); ++i)
+        {
+            if(i->first.first == &s) {
+                if(spent_.find(i->first.second) == spent_.end()
+                        && i->first.second->type != Sensor::SENSOR) {
+                    localDistanceMap.insert(std::make_pair(i->first.second, i->second));
+                }
+            } else if(i->first.second == &s) {
+                if(spent_.find(i->first.first) == spent_.end()
+                        && i->first.first->type != Sensor::SENSOR) {
+                    localDistanceMap.insert(std::make_pair(i->first.first, i->second));
+                }
+            }
+        }
+
+        // relay the message to each node that is within range
+        for(std::map<Sensor const*, float>::iterator i = localDistanceMap.begin();
+                i != localDistanceMap.end(); ++i)
+        {
 #ifdef TRACE
-        printf("dist: %f ; range: %f\n", i->second, s.range);
+            printf("dist: %f ; range: %f\n", i->second, s.range);
 #endif
-        if(i->second <= s.range) {
-            path[level].push_back(Edge(s, *i->first));
-            spent_.insert(i->first);
-            deferred.push_back(i->first);
+            if(i->second <= s.range) {
+                path[level].push_back(Edge(s, *i->first));
+                deferred.push_back(i->first);
+            }
         }
     }
 
+    // if there are nodes to be processed in the next level, do it
     if(deferred.size() > 0) {
         if(path.size() <= level + 1) {
             ++path;
         }
-        for(std::deque<Sensor const*>::iterator i = deferred.begin();
-                i != deferred.end(); ++i) {
-            ComputePathRec(**i, level + 1, path);
-        }
+        ComputePathRec(deferred, level + 1, path);
     }
 }

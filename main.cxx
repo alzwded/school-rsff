@@ -221,7 +221,7 @@ static void onmousemove(int x, int y)
     }
 }
 
-void PrecClicked()
+static void PrecClicked()
 {
     printf("prec clicked\n");
     if(iSensor == sensors.begin()) {
@@ -238,7 +238,7 @@ void PrecClicked()
     animating = false;
 }
 
-void UrmClicked()
+static void UrmClicked()
 {
     if(iSensor == sensors.end()) {
         iSensor = sensors.begin();
@@ -279,7 +279,7 @@ static void AnimClicked()
     }
 }
 
-void updateScene()
+static void updateScene()
 {
 #define ACTUAL_FRAMES_PER_ANIMATION_FRAME 30
     static size_t frameCounter = 0;
@@ -305,25 +305,8 @@ static void RangeClicked()
     showRange = !showRange;
 }
 
-int main(int argc, char* argv[])
+static void addButtons()
 {
-    std::fstream f;
-    if(argc != 2) {
-        printf("usage: %s inputFile\n", argv[0]);
-        return 1;
-    } else {
-        f.open(argv[1], std::ios::in);
-
-        if(!f.good()) {
-            printf("usage: %s inputFile\n", argv[0]);
-            printf("Failed to open %s\n", argv[1]);
-            return 2;
-        }
-    }
-
-    //Path p = Pathfinder::ComputePath(sensors);
-    Point3D PP(0, 0, 0);
-
     buttons.push_back(Button(
                 Point2D(10, 970),
                 Point2D(60, 990),
@@ -344,6 +327,25 @@ int main(int argc, char* argv[])
                 Point2D(980, 965),
                 "Show range",
                 RangeClicked));
+}
+
+int main(int argc, char* argv[])
+{
+    std::fstream f;
+    if(argc != 2) {
+        printf("usage: %s inputFile\n", argv[0]);
+        return 1;
+    } else {
+        f.open(argv[1], std::ios::in);
+
+        if(!f.good()) {
+            printf("usage: %s inputFile\n", argv[0]);
+            printf("Failed to open %s\n", argv[1]);
+            return 2;
+        }
+    }
+
+    addButtons();
 
     Drawing::Init(&argc, argv);
     Drawing::SetOnMouseDown(onmousedown);

@@ -118,16 +118,8 @@ static void initGL()
 
 static void initRendering()
 {
-	//initModel();
-
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
-
-	// lighting
-	//initLight();
-
-	// blending
-	//initBlending();
 
 	glClearColor(.25f, .25f, 1.f, 1.f);
 }
@@ -139,9 +131,7 @@ static void handleResize(int w, int h)
 
 	glLoadIdentity(); 
 	gluPerspective(60.0, (double)w / (double)h, 1.5, 20.0); 
-    //glFrustum(-1.0, 1.0, -1.0, 1.0, 1.5, 20.0);
 
-	//wSize = std::make_pair(w, h);
     windowW = w;
     windowH = h;
 }
@@ -195,16 +185,12 @@ static void handleMouseMotion(int X, int Y)
 
 static void initGL2()
 {
-	//glutSetCursor(GLUT_CURSOR_NONE);
-
 	glutKeyboardFunc(handleKeyPress);
 	glutMouseFunc(handleMouse);
 	glutPassiveMotionFunc(handleMouseMotion);
 	glutMotionFunc(handleMouseMotion);
 	glutKeyboardUpFunc(handleKeyRelease);
 	glutReshapeFunc(handleResize);
-
-	//glutTimerFunc(25, update, 0);
 }
 
 void Drawing::Init(int* argc, char* argv[])
@@ -238,7 +224,6 @@ Drawing::Drawing(int window)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    //glFrustum(-1.0, 1.0, -1.0, 1.0, 1.5, 20.0);
 	gluPerspective(60.0, (double)1000 / (double)1000, 1.5, 20.0); 
 
     // rotate around center point
