@@ -363,3 +363,12 @@ void Drawing::Cube(float l)
     glutWireCube(l);
     glPopMatrix();
 }
+
+void Drawing::Sphere(float r)
+{
+    glPushMatrix();
+    glTranslatef(currentPoint_.x, currentPoint_.y, -currentPoint_.z);
+    glLineWidth(0.2);
+    glutWireSphere(r, 10, 10);
+    glPopMatrix();
+}

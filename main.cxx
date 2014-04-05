@@ -19,6 +19,7 @@ static AnimationData ad;
 static Path path;
 static int animFrame = 0;
 static bool animating = false;
+static bool showRange = false;
 
 static Sensor::vector::iterator iSensor = sensors.end();
 
@@ -66,6 +67,11 @@ struct SensorDrawer
         }
         dwg.MoveTo(o.location);
         dwg.Cube(0.1f);
+        if(showRange 
+                && o.type != Sensor::CENTRAL
+                && ad.EmittingSensors().find(&o) != ad.EmittingSensors().end()) {
+            dwg.Sphere(o.range);
+        }
     }
 };
 
@@ -294,6 +300,11 @@ void updateScene()
     }
 }
 
+static void RangeClicked()
+{
+    showRange = !showRange;
+}
+
 int main(int argc, char* argv[])
 {
     std::fstream f;
@@ -328,6 +339,11 @@ int main(int argc, char* argv[])
                 Point2D(980, 990),
                 "Porneste/Opreste animatia",
                 AnimClicked));
+    buttons.push_back(Button(
+                Point2D(700, 945),
+                Point2D(980, 965),
+                "Show range",
+                RangeClicked));
 
     Drawing::Init(&argc, argv);
     Drawing::SetOnMouseDown(onmousedown);

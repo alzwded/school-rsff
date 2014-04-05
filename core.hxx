@@ -68,11 +68,13 @@ public:
 private:
     Beams_t connections_;
     Sensors_t animatedSensors_;
+    Sensors_t emittingSensors_;
 public:
     AnimationData& operator<<(Edge const& edge) {
         animatedSensors_.insert(&edge.FirstNode());
         animatedSensors_.insert(&edge.SecondNode());
         connections_.push_back(Beam(edge.FirstNode().location, edge.SecondNode().location));
+        emittingSensors_.insert(&edge.FirstNode());
         return *this;
     }
 
@@ -84,9 +86,14 @@ public:
         return animatedSensors_;
     }
 
+    Sensors_t const& EmittingSensors() const {
+        return emittingSensors_;
+    }
+
     void Clear() {
         connections_.clear();
         animatedSensors_.clear();
+        emittingSensors_.clear();
     }
 };
 

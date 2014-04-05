@@ -28,6 +28,7 @@ public:
     void LineTo(Point2D);
     void SetTextScale(float);
     void Text(std::string const&);
+    void Sphere(float);
 
     static void SetVelocity(float dx, float dy, float dz);
     static void SetRotationalVelocity(float rx, float ry);

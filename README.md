@@ -72,3 +72,5 @@ Running an animation
 You need to select a starting sensor with the two buttons in the lower-left corner. The currently selected sensor is highlighted in lime green.
 
 Then, you can use the start/stop simulation button (lower right corner) to run the animation.
+
+You can turn the range-sphere's visibility on or off by clicked on the show range button (bottom right)

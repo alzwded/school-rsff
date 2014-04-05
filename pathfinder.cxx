@@ -20,6 +20,7 @@ namespace Pathfinder {
 
         typedef std::map<std::pair<Sensor const*, Sensor const*>, float, comp> map_t;
         map_t distanceMap_;
+        std::set<Sensor const*> spent_;
 
         priv_(Sensor::vector const& sensors);
         void ComputePathRec(Sensor const&, size_t, Path&);
@@ -39,6 +40,7 @@ Path Pathfinder::ComputePath(Sensor::vector const& sensors)
     priv_ o(sensors);
     Path p;
     ++p;
+    o.spent_.insert(StartingSensor);
     o.ComputePathRec(*StartingSensor, 0, p);
     return p;
 }
@@ -66,34 +68,55 @@ Pathfinder::priv_::priv_(Sensor::vector const& sensors)
     }
 }
 
+#define TRACE
+#ifdef TRACE
+# include <cstdio>
+#endif
 void Pathfinder::priv_::ComputePathRec(Sensor const& s, size_t level, Path& path)
 {
     std::map<Sensor const*, float> localDistanceMap;
     for(map_t::iterator i = distanceMap_.begin();
             s.type != Sensor::CENTRAL && i != distanceMap_.end(); ++i)
     {
-        if(i->first.first == &s ) {
-            if(i->first.second->type != Sensor::SENSOR) {
+        if(i->first.first == &s) {
+            if(spent_.find(i->first.second) == spent_.end()
+                    && i->first.second->type != Sensor::SENSOR) {
                 localDistanceMap.insert(std::make_pair(i->first.second, i->second));
             }
-            distanceMap_.erase(i);
+            //distanceMap_.erase(i);
         } else if(i->first.second == &s) {
-            if(i->first.first->type != Sensor::SENSOR) {
+            if(spent_.find(i->first.first) == spent_.end()
+                    && i->first.first->type != Sensor::SENSOR) {
                 localDistanceMap.insert(std::make_pair(i->first.first, i->second));
             }
-            distanceMap_.erase(i);
+            //distanceMap_.erase(i);
         }
     }
 
+#ifdef TRACE
+    printf("level: %d\n", level);
+#endif
+    std::deque<Sensor const*> deferred;
     for(std::map<Sensor const*, float>::iterator i = localDistanceMap.begin();
             i != localDistanceMap.end(); ++i)
     {
+#ifdef TRACE
+        printf("dist: %f ; range: %f\n", i->second, s.range);
+#endif
         if(i->second <= s.range) {
             path[level].push_back(Edge(s, *i->first));
-            if(path.size() <= level + 1) {
-                ++path;
-            }
-            ComputePathRec(*i->first, level + 1, path);
+            spent_.insert(i->first);
+            deferred.push_back(i->first);
+        }
+    }
+
+    if(deferred.size() > 0) {
+        if(path.size() <= level + 1) {
+            ++path;
+        }
+        for(std::deque<Sensor const*>::iterator i = deferred.begin();
+                i != deferred.end(); ++i) {
+            ComputePathRec(**i, level + 1, path);
         }
     }
 }
