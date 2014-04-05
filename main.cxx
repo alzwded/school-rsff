@@ -2,6 +2,9 @@
 #include "pathfinder.hxx"
 #include "drawing.hxx"
 
+bool toggle = false;
+#define AROUND(X, Y, RX, RY, T) (X > RX - T && X < RX + T && Y > RY - T && Y < RY + T)
+
 static void drawScene(Drawing& dwg)
 {
 #define GL_TEST_MODEL
@@ -30,14 +33,25 @@ static void drawScene(Drawing& dwg)
     dwg.Cube(2.f);
 
     dwg.SetColor(Drawing::WHITE);
-    dwg.MoveTo(Point2D(50, 0));
-    dwg.LineTo(Point2D(50, 100));
-    dwg.MoveTo(Point2D(0, 50));
-    dwg.LineTo(Point2D(100, 50));
+    dwg.MoveTo(Point2D(500, 0));
+    dwg.LineTo(Point2D(500, 1000));
+    dwg.MoveTo(Point2D(0, 500));
+    dwg.LineTo(Point2D(1000, 500));
 
-    dwg.MoveTo(Point2D(10, 10));
+    dwg.MoveTo(Point2D(50, 30));
     dwg.SetTextScale(8);
     dwg.Text("Hello!");
+
+    if(toggle) dwg.SetColor(Drawing::LIME);
+    else dwg.SetColor(Drawing::WHITE);
+    dwg.MoveTo(Point2D(770, 800));
+    dwg.SetTextScale(3);
+    dwg.Text("Click");
+    dwg.MoveTo(Point2D(770, 770));
+    dwg.LineTo(Point2D(770, 830));
+    dwg.LineTo(Point2D(830, 830));
+    dwg.LineTo(Point2D(830, 770));
+    dwg.LineTo(Point2D(770, 770));
 #endif
 }
 
@@ -51,7 +65,9 @@ static void onmousedown(int x, int y, int btn)
     lastX = x;
     lastY = y;
     if(btn == 1) {
-        dragging = true;
+        if(!AROUND(x, y, 800, 800, 30)) {
+            dragging = true;
+        }
     }
     if(btn == 2) {
         panningUp = true;
@@ -64,7 +80,11 @@ static void onmousedown(int x, int y, int btn)
 static void onmouseup(int x, int y, int btn)
 {
     if(btn == 1) {
-        dragging = false;
+        if(AROUND(x, y, 800, 800, 30)) {
+            toggle = !toggle;
+        } else {
+            dragging = false;
+        }
     }
     if(btn == 2) {
         panningUp = false;
@@ -87,11 +107,11 @@ static void onmousemove(int x, int y)
     }
     float vx = 0.f, vy = 0.f, vz = 0.f;
     if(panning) {
-        vx = (float)-dx / 100.f * 4.f;
-        vy = (float)-dy / 100.f * 4.f;
+        vx = (float)-dx / 100.f * 8.f;
+        vz = (float)dy / 100.f * 8.f;
     }
     if(panningUp) {
-        vz = (float)dy / 100.f * 4.f;
+        vy = (float)-dy / 100.f * 8.f;
     }
 
     Drawing::SetVelocity(vx, vy, vz);

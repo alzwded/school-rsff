@@ -277,8 +277,8 @@ void Drawing::MoveTo(Point3D p)
 
 void Drawing::MoveTo(Point2D p)
 {
-    currentPoint_.x = p.x;
-    currentPoint_.y = p.y;
+    currentPoint_.x = p.x / 10.f;
+    currentPoint_.y = p.y / 10.f;
 }
 
 void Drawing::LineTo(Point3D p)
@@ -288,6 +288,7 @@ void Drawing::LineTo(Point3D p)
     glVertex3f(currentPoint_.x, currentPoint_.y, -currentPoint_.z);
     glVertex3f(p.x, p.y, -p.z);
     glEnd();
+    MoveTo(p);
 }
 
 static void EnterOverlayContext()
@@ -324,10 +325,12 @@ void Drawing::LineTo(Point2D p)
 
     glBegin(GL_LINES);
     glVertex2f(currentPoint_.x, currentPoint_.y);
-    glVertex2f(p.x, p.y);
+    glVertex2f(p.x / 10.f, p.y / 10.f);
     glEnd();
 
     LeaveOverlayContext();
+
+    MoveTo(p);
 }
 
 void Drawing::SetTextScale(float s)
