@@ -21,7 +21,20 @@
 *.i*86
 *.x86_64
 *.hex
-rsff
+./rsff
 
 # freeglut
 freeglut/*
+
+# vs stuff
+*.ilk
+*.pdb
+Debug
+ipch
+*.ipch
+*.opensdf
+*.sdf
+*.suo
+Release
+*.vcxproj.filters
+*.user
