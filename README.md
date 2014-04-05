@@ -10,6 +10,26 @@ Video of the simulator in action:
 http://youtu.be/Yq9bAg_VTa4
 ```
 
+Building on Windows
+===================
+
+You will need the following:
+* Visual C++ 10 compiler (Visual Studio 2010)
+* freeglut distribution (from over here http://files.transmissionzero.co.uk/software/development/GLUT/older/ , get `freeglut-MSVC-2.8.0-1.mp.zip`)
+
+After you have everything, extract/copy the `freeglut` folder as it is in the project's root directory.
+
+Then, open up the visual studio solution and compile. There you go!
+
+Building on Linux
+=================
+
+You will need:
+* a build chain (gcc, make, etc)
+* freeglut3 and freeglut3-dev
+
+Run `make` and you're done.
+
 Interacting with the simulator
 ==============================
 
