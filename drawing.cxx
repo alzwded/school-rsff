@@ -221,6 +221,7 @@ void Drawing::Loop(
         void (*draw)(Drawing&))
 {
     drawFunc_ = draw;
+    updateFunc_ = update;
     glutDisplayFunc(draw_);
     glutTimerFunc(17, update_, 0);
     glutMainLoop();

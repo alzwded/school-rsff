@@ -15,6 +15,13 @@ static Beam::vector beams;
 static Sensor::vector sensors;
 static Button::vector buttons;
 static AnimationData ad;
+
+static Path path;
+static int animFrame = 0;
+static bool animating = false;
+
+static Sensor::vector::iterator iSensor = sensors.end();
+
 static bool clickEnabled = false;
 
 struct BeamDrawer {
@@ -39,7 +46,10 @@ struct SensorDrawer
     {}
     void operator()(Sensor const& o) const
     {
-        if(o.selected || ad.Sensors().find(&o) != ad.Sensors().end()) {
+        if(o.selected
+                || ad.Sensors().find(&o) != ad.Sensors().end()
+                || iSensor != sensors.end() && &o == &(*iSensor)
+        ) {
             dwg.SetColor(Drawing::LIME);
         } else {
             switch(o.type) {
@@ -208,16 +218,80 @@ static void onmousemove(int x, int y)
 void PrecClicked()
 {
     printf("prec clicked\n");
+    if(iSensor == sensors.begin()) {
+        iSensor = sensors.end();
+    } else {
+        --iSensor;
+    }
+    if(iSensor == sensors.end()) {
+        printf("no sensor selected\n");
+    } else {
+        printf("current sensor: %ld\n", iSensor - sensors.begin() + 1);
+    }
+    path.clear();
+    animating = false;
 }
 
 void UrmClicked()
 {
-    printf("urm clicked\n");
+    if(iSensor == sensors.end()) {
+        iSensor = sensors.begin();
+    } else {
+        ++iSensor;
+    }
+    if(iSensor == sensors.end()) {
+        printf("no sensor selected\n");
+    } else {
+        printf("current sensor: %ld\n", iSensor - sensors.begin() + 1);
+    }
+    path.clear();
+    animating = false;
 }
 
-void AnimClicked()
+static void sensordeselect(Sensor& s)
+{
+    s.selected = false;
+}
+
+static void AnimClicked()
 {
     printf("anim clicked\n");
+    if(iSensor == sensors.end()) {
+        printf("no sensor selected. Doing nothing\n");
+        return;
+    }
+    if(path.size() == 0) {
+        Pathfinder::SetStartingSensor(*iSensor);
+        path = Pathfinder::ComputePath(sensors);
+        printf("path computed, size: %d\n", path.size());
+        animFrame = 0;
+    }
+    animating = !animating;
+    if(animating) {
+        std::for_each(sensors.begin(), sensors.end(), sensordeselect);
+        iSensor = sensors.end();
+    }
+}
+
+void updateScene()
+{
+#define ACTUAL_FRAMES_PER_ANIMATION_FRAME 30
+    static size_t frameCounter = 0;
+    if(path.size() == 0) {
+        frameCounter = 0;
+        return;
+    }
+
+    if(++frameCounter % ACTUAL_FRAMES_PER_ANIMATION_FRAME == 0) {
+        frameCounter = 0;
+        animFrame = (animFrame + 1) % path.size();
+    }
+
+    for(Path::Edges_t::iterator i = path[animFrame].begin();
+            i != path[animFrame].end(); ++i)
+    {
+        ad << *i;
+    }
 }
 
 int main(int argc, char* argv[])
@@ -236,7 +310,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    Path p = Pathfinder::ComputePath();
+    //Path p = Pathfinder::ComputePath(sensors);
     Point3D PP(0, 0, 0);
 
     buttons.push_back(Button(
@@ -261,8 +335,9 @@ int main(int argc, char* argv[])
     Drawing::SetOnMouseMove(onmousemove);
 
     Parser::Parse(f, beams, sensors);
+    iSensor = sensors.end();
 
-    Drawing::Loop(NULL, drawScene);
+    Drawing::Loop(updateScene, drawScene);
 
     return 0;
 }

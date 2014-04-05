@@ -19,11 +19,17 @@ public:
     Edges_t& operator[](size_t frame) {
         return path_[frame];
     }
+    size_t size() const {
+        return path_.size();
+    }
+    void clear() {
+        path_.clear();
+    }
 };
 
 namespace Pathfinder {
     void SetStartingSensor(Sensor const& s);
-    Path ComputePath();
+    Path ComputePath(Sensor::vector const& sensors);
 } // namespace
 
 
