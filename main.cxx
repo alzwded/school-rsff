@@ -226,7 +226,7 @@ void PrecClicked()
     if(iSensor == sensors.end()) {
         printf("no sensor selected\n");
     } else {
-        printf("current sensor: %ld\n", iSensor - sensors.begin() + 1);
+        std::cout << "current sensor: " << iSensor - sensors.begin() + 1 << std::endl;
     }
     path.clear();
     animating = false;
@@ -242,7 +242,7 @@ void UrmClicked()
     if(iSensor == sensors.end()) {
         printf("no sensor selected\n");
     } else {
-        printf("current sensor: %ld\n", iSensor - sensors.begin() + 1);
+        std::cout << "current sensor: " << iSensor - sensors.begin() + 1 << std::endl;
     }
     path.clear();
     animating = false;
@@ -263,7 +263,7 @@ static void AnimClicked()
     if(path.size() == 0) {
         Pathfinder::SetStartingSensor(*iSensor);
         path = Pathfinder::ComputePath(sensors);
-        printf("path computed, size: %d\n", path.size());
+        std::cout << "path computed, number of frames: " << path.size() << std::endl;
         animFrame = 0;
     }
     animating = !animating;
