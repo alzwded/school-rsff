@@ -27,7 +27,6 @@ static void draw_()
 {
     Drawing dwg(window);
     if(drawFunc_) drawFunc_(dwg);
-    glutSwapBuffers();
 }
 
 static void update_(int)
