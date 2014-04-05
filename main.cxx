@@ -256,7 +256,8 @@ static void sensordeselect(Sensor& s)
 static void AnimClicked()
 {
     printf("anim clicked\n");
-    if(iSensor == sensors.end()) {
+    animating = !animating;
+    if(path.size() == 0 && iSensor == sensors.end()) {
         printf("no sensor selected. Doing nothing\n");
         return;
     }
@@ -266,7 +267,6 @@ static void AnimClicked()
         std::cout << "path computed, number of frames: " << path.size() << std::endl;
         animFrame = 0;
     }
-    animating = !animating;
     if(animating) {
         std::for_each(sensors.begin(), sensors.end(), sensordeselect);
         iSensor = sensors.end();
@@ -282,7 +282,7 @@ void updateScene()
         return;
     }
 
-    if(++frameCounter % ACTUAL_FRAMES_PER_ANIMATION_FRAME == 0) {
+    if(animating && ++frameCounter % ACTUAL_FRAMES_PER_ANIMATION_FRAME == 0) {
         frameCounter = 0;
         animFrame = (animFrame + 1) % path.size();
     }
