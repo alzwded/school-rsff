@@ -2,6 +2,7 @@
 #define DRAWING_HXX
 
 #include "core.hxx"
+#include <string>
 
 class Drawing {
 public:
@@ -14,7 +15,8 @@ public:
     } color_;
     Point3D currentPoint_;
     int window_;
-    float rx, ry, px, py;
+    float textScale;
+
 public:
     Drawing(int window);
     ~Drawing();
@@ -22,6 +24,29 @@ public:
     void MoveTo(Point3D);
     void LineTo(Point3D);
     void Cube(float);
+    void MoveTo(Point2D);
+    void LineTo(Point2D);
+    void SetTextScale(float);
+    void Text(std::string const&);
+
+    static void SetVelocity(float dx, float dy, float dz);
+    static void SetRotationalVelocity(float rx, float ry);
+
+    static void SetOnMouseDown(
+            void (*f)(int x, int y, int button));
+    static void SetOnMouseUp(
+            void (*f)(int x, int y, int button));
+    static void SetOnMouseMove(
+            void (*f)(int dx, int dy));
+    static void SetOnKeyDown(
+            void (*f)(char key));
+    static void SetOnKeyUp(
+            void (*f)(char key));
+
+    static void Init(int* argc, char* argv[]);
+    static void Loop(
+            void (*update)(),
+            void (*draw)(Drawing&));
 };
 
 #endif

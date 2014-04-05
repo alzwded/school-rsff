@@ -1,21 +1,9 @@
 #include "core.hxx"
 #include "pathfinder.hxx"
 #include "drawing.hxx"
-#include <GL/freeglut.h>
 
-static int window;
-void initGL()
+static void drawScene(Drawing& dwg)
 {
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-	glutInitWindowSize(1000, 1000); 
-
-    window = glutCreateWindow("RSFF-VMAMZ");
-}
-
-void drawScene()
-{
-    Drawing dwg(window);
-
 #define GL_TEST_MODEL
 #ifdef GL_TEST_MODEL
     dwg.MoveTo(Point3D(0.f,     1.f,   0.f));
@@ -40,38 +28,73 @@ void drawScene()
     dwg.Cube(2.f);
     dwg.MoveTo(Point3D(4, 0, 5));
     dwg.Cube(2.f);
+
+    dwg.SetColor(Drawing::WHITE);
+    dwg.MoveTo(Point2D(50, 0));
+    dwg.LineTo(Point2D(50, 100));
+    dwg.MoveTo(Point2D(0, 50));
+    dwg.LineTo(Point2D(100, 50));
+
+    dwg.MoveTo(Point2D(10, 10));
+    dwg.SetTextScale(8);
+    dwg.Text("Hello!");
 #endif
 }
 
-void initRendering()
+static bool dragging = false;
+static bool panningUp = false;
+static bool panning = false;
+static int lastX = 0, lastY = 0;
+
+static void onmousedown(int x, int y, int btn)
 {
-	//initModel();
-
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-
-	// lighting
-	//initLight();
-
-	// blending
-	//initBlending();
-
-	glClearColor(.25f, .25f, 1.f, 1.f);
+    lastX = x;
+    lastY = y;
+    if(btn == 1) {
+        dragging = true;
+    }
+    if(btn == 2) {
+        panningUp = true;
+    }
+    if(btn == 3) {
+        panning = true;
+    }
 }
 
-void initGL2()
+static void onmouseup(int x, int y, int btn)
 {
-	glutSetCursor(GLUT_CURSOR_NONE);
+    if(btn == 1) {
+        dragging = false;
+    }
+    if(btn == 2) {
+        panningUp = false;
+    }
+    if(btn == 3) {
+        panning = false;
+    }
+}
 
-	glutDisplayFunc(drawScene);
-	//glutKeyboardFunc(handleKeypress);
-	//glutMouseFunc(handleMouse);
-	//glutPassiveMotionFunc(doRotate);
-	//glutMotionFunc(doRotate);
-	//glutReshapeFunc(handleResize);
-	//glutKeyboardUpFunc(handleKeyRelease);
+static void onmousemove(int x, int y)
+{
+    int dx = x - lastX;
+    int dy = y - lastY;
+    lastX = x;
+    lastY = y;
+    if(dragging) {
+        Drawing::SetRotationalVelocity(
+                (float)dx / 100.f * 180.f,
+                (float)-dy / 100.f * 180.f);
+    }
+    float vx = 0.f, vy = 0.f, vz = 0.f;
+    if(panning) {
+        vx = (float)-dx / 100.f * 4.f;
+        vy = (float)-dy / 100.f * 4.f;
+    }
+    if(panningUp) {
+        vz = (float)dy / 100.f * 4.f;
+    }
 
-	//glutTimerFunc(25, update, 0);
+    Drawing::SetVelocity(vx, vy, vz);
 }
 
 int main(int argc, char* argv[])
@@ -79,12 +102,12 @@ int main(int argc, char* argv[])
     Path p = Pathfinder::ComputePath();
     Point3D PP(0, 0, 0);
 
-    glutInit(&argc, argv);
-    initGL();
-    initRendering();
-    initGL2();
+    Drawing::Init(&argc, argv);
+    Drawing::SetOnMouseDown(onmousedown);
+    Drawing::SetOnMouseUp(onmouseup);
+    Drawing::SetOnMouseMove(onmousemove);
 
-    glutMainLoop();
+    Drawing::Loop(NULL, drawScene);
 
     return 0;
 }

@@ -37,9 +37,10 @@ struct Sensor {
         ROUTER,
         SENSOR
     } type;
+    float range;
 
-    Sensor(Point3D p, SensorType t)
-        : location(p), type(t), selected(false)
+    Sensor(Point3D p, SensorType t, float r)
+        : location(p), type(t), range(r), selected(false)
     {}
 };
 
