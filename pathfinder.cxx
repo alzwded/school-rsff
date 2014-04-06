@@ -1,7 +1,7 @@
 #include "pathfinder.hxx"
 #include <cmath>
 #include <utility>
-#include <deque>
+#include <set>
 
 static Sensor const* StartingSensor = NULL;
 void Pathfinder::SetStartingSensor(Sensor const& s)
@@ -10,7 +10,7 @@ void Pathfinder::SetStartingSensor(Sensor const& s)
 }
 
 namespace Pathfinder {
-    typedef std::deque<Sensor const*> sensors_t;
+    typedef std::set<Sensor const*> sensors_t;
 
     class priv_ {
         friend Path ComputePath(Sensor::vector const& sensors);
@@ -44,7 +44,7 @@ Path Pathfinder::ComputePath(Sensor::vector const& sensors)
     Path p;
     ++p;
     Pathfinder::sensors_t ss;
-    ss.push_back(StartingSensor);
+    ss.insert(StartingSensor);
     o.ComputePathRec(ss, 0, p);
     return p;
 }
@@ -123,7 +123,7 @@ void Pathfinder::priv_::ComputePathRec(Pathfinder::sensors_t& ss, size_t level, 
 #endif
             if(i->second <= s.range) {
                 path[level].push_back(Edge(s, *i->first));
-                deferred.push_back(i->first);
+                deferred.insert(i->first);
             }
         }
     }
