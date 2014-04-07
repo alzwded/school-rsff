@@ -72,7 +72,6 @@ Pathfinder::priv_::priv_(Sensor::vector const& sensors)
     }
 }
 
-#define TRACE
 #ifdef TRACE
 # include <cstdio>
 #endif

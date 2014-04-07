@@ -120,8 +120,6 @@ static void initRendering()
 {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
-
-	glClearColor(.25f, .25f, 1.f, 1.f);
 }
 
 static void handleResize(int w, int h)
@@ -283,7 +281,6 @@ static void EnterOverlayContext()
     glLoadIdentity();
     gluOrtho2D(0, 100.0f, 100.0f, 0);
     glMatrixMode(GL_MODELVIEW);
-    glEnable(GL_COLOR_MATERIAL);
     glPushMatrix();
     glLoadIdentity();
 

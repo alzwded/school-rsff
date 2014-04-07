@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <fstream>
 #include <algorithm>
+#include <ctime>
 #include "core.hxx"
 #include "pathfinder.hxx"
 #include "drawing.hxx"
@@ -101,6 +102,7 @@ struct ButtonDrawer
 
         Point2D textLocation(o.location.x + 3, o.extent.y - 3);
         dwg.MoveTo(textLocation);
+        dwg.SetTextScale(5);
         dwg.Text(o.text);
     }
 };
@@ -223,7 +225,6 @@ static void onmousemove(int x, int y)
 
 static void PrecClicked()
 {
-    printf("prec clicked\n");
     if(iSensor == sensors.begin()) {
         iSensor = sensors.end();
     } else {
@@ -235,6 +236,7 @@ static void PrecClicked()
         std::cout << "current sensor: " << iSensor - sensors.begin() + 1 << std::endl;
     }
     path.clear();
+    if(animating) printf("stopping animation\n");
     animating = false;
 }
 
@@ -251,6 +253,7 @@ static void UrmClicked()
         std::cout << "current sensor: " << iSensor - sensors.begin() + 1 << std::endl;
     }
     path.clear();
+    if(animating) printf("stopping animation\n");
     animating = false;
 }
 
@@ -261,19 +264,23 @@ static void sensordeselect(Sensor& s)
 
 static void AnimClicked()
 {
-    printf("anim clicked\n");
     animating = !animating;
     if(path.size() == 0 && iSensor == sensors.end()) {
         printf("no sensor selected. Doing nothing\n");
         return;
     }
+    if(animating) printf("starting animation\n");
+    else printf("pausing animation\n");
     if(path.size() == 0) {
+        printf("computing path...\n");
+        clock_t ticks = clock();
         Pathfinder::SetStartingSensor(*iSensor);
         path = Pathfinder::ComputePath(sensors);
-        std::cout << "path computed, number of frames: " << path.size() << std::endl;
+        ticks = clock() - ticks;
+        std::cout << "path computed (" << ((float)ticks / CLOCKS_PER_SEC) << " seconds), number of frames: " << path.size() << std::endl;
         animFrame = 0;
     }
-    if(animating) {
+    if(animating && iSensor != sensors.end()) {
         std::for_each(sensors.begin(), sensors.end(), sensordeselect);
         iSensor = sensors.end();
     }
@@ -303,6 +310,8 @@ static void updateScene()
 static void RangeClicked()
 {
     showRange = !showRange;
+    if(showRange) printf("showing sensor range as a sphere\n");
+    else printf("showing only connections\n");
 }
 
 static void addButtons()
