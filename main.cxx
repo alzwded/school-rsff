@@ -204,6 +204,7 @@ static void onmousemove(int x, int y)
     }
     if(panningUp) {
         vy = (float)-dy / 100.f * 8.f;
+        vx = (float)-dx / 100.f * 8.f;
     }
 
     Drawing::SetVelocity(vx, vy, vz);

@@ -23,6 +23,52 @@ static int windowW = 1000, windowH = 1000;
 static float rx = 0.f, ry = 0.f, px = 0.f, py = 0.f, pz = 0.f;
 static float dx = 0.f, dy = 0.f, dz = 0.f, drx = 0.f, dry = 0.f;
 
+// multiply a GL 4x4 matrix with a vec4 => vec4
+static void multMat4Vec4(GLfloat* mat, GLfloat* vec, GLfloat* ret)
+{
+    for(size_t i = 0; i < 4; ++i) {
+        ret[i] = 0.f
+               + mat[i + 0] * vec[0]
+               + mat[i + 4] * vec[1]
+               + mat[i + 8] * vec[2]
+               + mat[i + 12] * vec[3];
+    }
+}
+
+static void rotateDirectionVector()
+{
+    glMatrixMode(GL_PROJECTION); // work in GL_PROJECTION_MATRIX
+    glPushMatrix(); // save previou transforms
+
+    // build the transformation matrix
+    // - start with I
+    glLoadIdentity();
+    // - apply current camera rotations
+    glRotatef(rx, 0.f, 1.f, 0.f);
+    glRotatef(ry, 1.f, 0.f, 0.f);
+    // retrieve transformation matrix
+    GLfloat mat[16] = {
+        1.f, 0.f, 0.f, 0.f, 
+        0.f, 1.f, 0.f, 0.f, 
+        0.f, 0.f, 1.f, 0.f,
+        0.f, 0.f, 0.f, 1.f,
+    };
+    glGetFloatv(GL_PROJECTION_MATRIX, mat);
+
+    // apply the camera transformation to our direction vector
+    GLfloat d[4] = { dx , dy , dz , 1.f };
+    GLfloat rez[4] = { 0.f, 0.f, 0.f, 0.f };
+    multMat4Vec4(mat, d, rez);
+
+    // store results
+    dx = rez[0];
+    dy = rez[1];
+    dz = rez[2];
+
+    // restore GL_PROJECTION_MATRIX
+    glPopMatrix();
+}
+
 static void draw_()
 {
     Drawing dwg(window);
@@ -32,6 +78,8 @@ static void draw_()
 static void update_(int)
 {
     if(updateFunc_) updateFunc_();
+
+    rotateDirectionVector();
 
     if(fabs(drx) > 1.e-5) {
         rx = rx + drx;
@@ -68,17 +116,9 @@ static void update_(int)
 
 void Drawing::SetVelocity(float _dx, float _dy, float _dz)
 {
-    float M = sqrtf(_dx * _dx + _dy * _dy + _dz * _dz);
-    float theta = atan2f(_dz, _dx); // yaw
-    float fi = atan2f(sqrtf(_dx * _dx + _dz * _dz), _dy); // pitch
-    //fi = fi - ry / 180.f * 3.14159; // leave this alone
-    theta = theta - rx / 180.f * 3.14159;
-    float ax = M * sinf(fi) * cosf(theta);
-    float az = M * sinf(fi) * sinf(theta);
-    float ay = M * cosf(fi);
-    dx = ax;
-    dy = ay;
-    dz = az;
+    dx = _dx;
+    dy = _dy;
+    dz = _dz;
 }
 
 void Drawing::SetOnMouseUp( void (*f)(int x, int y, int button))
