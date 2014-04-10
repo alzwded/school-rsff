@@ -35,6 +35,9 @@ static void multMat4Vec4(GLfloat* mat, GLfloat* vec, GLfloat* ret)
     }
 }
 
+// this is by far the single function I'm most proud of
+// It's the first time I can get opengl to rotate a direction vector
+//     according to the camera for me
 static void rotateDirectionVector()
 {
     glMatrixMode(GL_PROJECTION); // work in GL_PROJECTION_MATRIX
